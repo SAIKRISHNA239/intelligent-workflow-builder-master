@@ -1,0 +1,381 @@
+.App {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.TopNav {
+  height: 56px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.TopNav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.TopNav-brand:hover {
+  background-color: #f3f4f6;
+}
+
+.TopNav-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #16a34a;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.TopNav-title {
+  font-weight: 700;
+  color: #111827;
+  font-size: 14px;
+}
+
+.TopNav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.TopNav-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.App-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-outline {
+  background-color: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.btn-outline:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.btn-success {
+  background-color: #2f7d32;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #256628;
+}
+
+.StacksPage {
+  flex: 1;
+  width: 100%;
+  overflow: auto;
+  background: #f6f7f8;
+}
+
+.StacksHeader {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.StacksHeader-spacer {
+  flex: 1;
+}
+
+.StacksHeader h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.StacksBody {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px 32px 16px;
+}
+
+.StacksEmpty {
+  height: calc(100vh - 56px - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.EmptyCard {
+  width: 340px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 8px 28px rgba(17, 24, 39, 0.08);
+}
+
+.EmptyCard h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.EmptyCard p {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.35;
+  margin-bottom: 14px;
+}
+
+.StacksGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  padding-top: 18px;
+}
+
+@media (max-width: 1100px) {
+  .StacksGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .StacksGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.StackCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 14px 30px rgba(17, 24, 39, 0.06);
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.StackCard-title {
+  font-weight: 800;
+  color: #111827;
+  font-size: 14px;
+}
+
+.StackCard-subtitle {
+  color: #6b7280;
+  font-size: 12px;
+  margin-top: 6px;
+  min-height: 16px;
+}
+
+.StackCard-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.BuilderPage {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+}
+
+.BuilderFab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1200;
+}
+
+.FabButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.22);
+  font-size: 18px;
+}
+
+.FabButton-play {
+  background: #a7f3d0;
+  color: #065f46;
+}
+
+.FabButton-chat {
+  background: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.modal-content.modal-create {
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 520px;
+}
+
+.modal-content.modal-chat {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  width: min(960px, calc(100vw - 80px));
+  height: min(620px, calc(100vh - 120px));
+}
+
+.modal-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+}
+
+.modal-title {
+  font-weight: 800;
+  color: #111827;
+  font-size: 14px;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #6b7280;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.modal-body {
+  padding: 16px;
+  background: #ffffff;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.form-field label {
+  font-size: 12px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.form-field input,
+.form-field textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.form-field textarea {
+  resize: none;
+}
+
+.modal-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: #ffffff;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
