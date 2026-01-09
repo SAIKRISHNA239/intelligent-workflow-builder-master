@@ -191,19 +191,24 @@ class LLMService:
         """
         # If web search is enabled, add search results to context
         if use_web_search:
-            try:
-                search_results = self.search_web(query)
-                web_context = "\n\nWeb Search Results:\n"
-                for i, result in enumerate(search_results["results"], 1):
-                    web_context += f"{i}. {result['title']}\n{result['snippet']}\n{result['link']}\n\n"
-                
-                if context:
-                    context = f"{context}\n\n{web_context}"
-                else:
-                    context = web_context
-            except Exception as e:
-                # If web search fails, continue without it
-                print(f"Web search failed: {str(e)}")
+            if not self.serpapi_key:
+                # If SerpAPI key is not configured, log warning but continue
+                print("Warning: Web search enabled but SerpAPI key not configured")
+            else:
+                try:
+                    search_results = self.search_web(query)
+                    if search_results and search_results.get("results"):
+                        web_context = "\n\nWeb Search Results:\n"
+                        for i, result in enumerate(search_results["results"], 1):
+                            web_context += f"{i}. {result.get('title', '')}\n{result.get('snippet', '')}\n{result.get('link', '')}\n\n"
+                        
+                        if context:
+                            context = f"{context}\n\n{web_context}"
+                        else:
+                            context = web_context
+                except Exception as e:
+                    # If web search fails, continue without it
+                    print(f"Web search failed: {str(e)}")
         
         # Generate response
         if provider.lower() == "openai":

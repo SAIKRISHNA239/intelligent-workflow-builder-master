@@ -4,6 +4,7 @@
   display: flex;
   flex-direction: column;
   background-color: white;
+  min-height: 0;
 }
 
 .chat-header {
@@ -31,6 +32,27 @@
   font-size: 14px;
   font-weight: 800;
   margin: 0;
+  color: #111827;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: #f3f4f6;
   color: #111827;
 }
 
@@ -80,6 +102,15 @@
   display: flex;
   gap: 10px;
   align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.chat-row-user {
+  flex-direction: row-reverse;
+}
+
+.chat-row-assistant {
+  flex-direction: row;
 }
 
 .chat-avatar {
@@ -90,7 +121,7 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 .chat-avatar svg {
@@ -111,6 +142,17 @@
 .chat-bubble {
   flex: 1;
   min-width: 0;
+  max-width: 70%;
+}
+
+.chat-bubble-user {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chat-bubble-assistant {
+  display: flex;
+  justify-content: flex-start;
 }
 
 @keyframes fadeIn {
@@ -138,17 +180,20 @@
   word-wrap: break-word;
   white-space: pre-wrap;
   font-size: 13px;
-  line-height: 1.35;
+  line-height: 1.5;
   background: #ffffff;
   border: 1px solid #e5e7eb;
+  color: #111827;
 }
 
-.user-message .message-content {
-  background-color: #ffffff;
+.chat-bubble-user .message-content {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
 }
 
-.assistant-message .message-content {
+.chat-bubble-assistant .message-content {
   background-color: #ffffff;
+  border-color: #e5e7eb;
 }
 
 .message-time {
@@ -202,12 +247,14 @@
 
 .chat-input {
   flex: 1;
-  padding: 12px;
+  padding: 12px 16px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 13px;
   font-family: inherit;
   resize: none;
+  min-height: 44px;
+  max-height: 120px;
 }
 
 .chat-input:focus {

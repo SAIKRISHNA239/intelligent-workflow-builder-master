@@ -11,6 +11,19 @@ function ChatInterface({ workflowId, onClose }) {
   const [sessionId] = useState(() => uuidv4());
   const messagesEndRef = useRef(null);
 
+  // Check if workflowId is provided
+  useEffect(() => {
+    if (!workflowId) {
+      const errorMessage = {
+        id: Date.now(),
+        role: 'assistant',
+        message: 'Error: No workflow selected. Please select a workflow first.',
+        created_at: new Date().toISOString(),
+      };
+      setMessages([errorMessage]);
+    }
+  }, [workflowId]);
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -33,12 +46,13 @@ function ChatInterface({ workflowId, onClose }) {
   }, [messages, scrollToBottom]);
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || loading) return;
+    const trimmedMessage = inputMessage.trim();
+    if (!trimmedMessage || loading || !workflowId) return;
 
     const userMessage = {
       id: Date.now(),
       role: 'user',
-      message: inputMessage,
+      message: trimmedMessage,
       created_at: new Date().toISOString(),
     };
 
@@ -47,7 +61,7 @@ function ChatInterface({ workflowId, onClose }) {
     setLoading(true);
 
     try {
-      const response = await chatAPI.sendMessage(workflowId, sessionId, inputMessage);
+      const response = await chatAPI.sendMessage(workflowId, sessionId, trimmedMessage);
       const assistantMessage = {
         id: response.data.id,
         role: 'assistant',
@@ -80,7 +94,9 @@ function ChatInterface({ workflowId, onClose }) {
     <div className="chat-interface">
       <div className="chat-header">
         <h2>GenAI Stack Chat</h2>
-        <button className="close-btn" onClick={onClose}>×</button>
+        {onClose && (
+          <button className="close-btn" onClick={onClose}>×</button>
+        )}
       </div>
       
       <div className="chat-messages">
@@ -91,22 +107,27 @@ function ChatInterface({ workflowId, onClose }) {
           </div>
         )}
         {messages.map((message) => (
-          <div key={message.id} className="chat-row">
+          <div key={message.id} className={`chat-row ${message.role === 'user' ? 'chat-row-user' : 'chat-row-assistant'}`}>
             <div className={`chat-avatar ${message.role === 'user' ? 'chat-avatar-user' : 'chat-avatar-assistant'}`}>
               {message.role === 'user' ? <FaUser /> : <FaRobot />}
             </div>
-            <div className="chat-bubble">
+            <div className={`chat-bubble ${message.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-assistant'}`}>
               <div className="message-content">{message.message}</div>
             </div>
           </div>
         ))}
         {loading && (
-          <div className="chat-message assistant-message">
-            <div className="message-content">
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
+          <div className="chat-row chat-row-assistant">
+            <div className="chat-avatar chat-avatar-assistant">
+              <FaRobot />
+            </div>
+            <div className="chat-bubble chat-bubble-assistant">
+              <div className="message-content">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
               </div>
             </div>
           </div>
@@ -121,7 +142,7 @@ function ChatInterface({ workflowId, onClose }) {
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder={loading ? 'Thinking…' : 'Send a message'}
-          rows="2"
+          rows="1"
           disabled={loading}
         />
         <button

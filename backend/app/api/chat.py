@@ -16,27 +16,42 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 @router.post("", response_model=ChatMessageResponse, status_code=status.HTTP_201_CREATED)
 def send_message(message_data: ChatMessageCreate, db: Session = Depends(get_db)):
     """Send a chat message through a workflow"""
+    # Validate message
+    if not message_data.message or not message_data.message.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message cannot be empty"
+        )
+    
     # Save user message
     user_message = ChatMessage(
         workflow_id=message_data.workflow_id,
         session_id=message_data.session_id,
         role="user",
-        message=message_data.message
+        message=message_data.message.strip()
     )
     db.add(user_message)
     db.flush()
     
-    # Get workflow
-    workflow = db.query(Workflow).filter(Workflow.id == message_data.workflow_id).first()
+    # Get workflow with components and connections
+    from sqlalchemy.orm import joinedload
+    workflow = db.query(Workflow)\
+        .options(joinedload(Workflow.components), joinedload(Workflow.connections))\
+        .filter(Workflow.id == message_data.workflow_id)\
+        .first()
     if not workflow:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Workflow not found"
         )
     
+    # Ensure components and connections are loaded
+    _ = workflow.components
+    _ = workflow.connections
+    
     # Execute workflow
     executor = WorkflowExecutor()
-    result = executor.execute_workflow(workflow, message_data.message, db)
+    result = executor.execute_workflow(workflow, message_data.message.strip(), db)
     
     # Save assistant response
     assistant_message = ChatMessage(

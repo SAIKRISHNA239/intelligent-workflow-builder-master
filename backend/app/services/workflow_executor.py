@@ -27,7 +27,11 @@ class WorkflowExecutor:
         Returns:
             Tuple of (is_valid, error_message)
         """
-        components = workflow.components
+        components = workflow.components if hasattr(workflow, 'components') else []
+        
+        # Check if components list is empty
+        if not components:
+            return False, "Workflow must contain at least one component"
         
         # Check for required components
         component_types = [c.component_type for c in components]
@@ -120,39 +124,60 @@ class WorkflowExecutor:
         elif component_type == "knowledgebase":
             # Knowledgebase component retrieves relevant context
             query = input_data.get("query", "")
+            if not query:
+                return {
+                    "query": "",
+                    "context": "",
+                    "type": "knowledgebase"
+                }
+            
             knowledgebase_id = component.node_id
             
-            # Generate query embedding
-            embedding_provider = config.get("embedding_provider", "openai")
-            query_embeddings = self.embedding_service.generate_embeddings(
-                [query],
-                provider=embedding_provider
-            )
-            
-            # Search vector store
-            collection_name = config.get("collection_name", "documents")
-            n_results = config.get("n_results", 5)
-            
-            search_results = self.vector_store.search(
-                collection_name=collection_name,
-                knowledgebase_id=knowledgebase_id,
-                query_embedding=query_embeddings[0],
-                n_results=n_results
-            )
-            
-            # Combine retrieved documents as context
-            context = "\n\n".join(search_results["documents"])
-            
-            return {
-                "query": query,
-                "context": context,
-                "type": "knowledgebase"
-            }
+            try:
+                # Generate query embedding
+                embedding_provider = config.get("embedding_provider", "openai")
+                query_embeddings = self.embedding_service.generate_embeddings(
+                    [query],
+                    provider=embedding_provider
+                )
+                
+                # Search vector store
+                collection_name = config.get("collection_name", "documents")
+                n_results = config.get("n_results", 5)
+                
+                search_results = self.vector_store.search(
+                    collection_name=collection_name,
+                    knowledgebase_id=knowledgebase_id,
+                    query_embedding=query_embeddings[0],
+                    n_results=n_results
+                )
+                
+                # Combine retrieved documents as context
+                context = "\n\n".join(search_results.get("documents", []))
+                
+                return {
+                    "query": query,
+                    "context": context,
+                    "type": "knowledgebase"
+                }
+            except Exception as e:
+                # If knowledgebase search fails, continue with empty context
+                return {
+                    "query": query,
+                    "context": "",
+                    "type": "knowledgebase"
+                }
         
         elif component_type == "llm_engine":
             # LLM engine component generates response
             query = input_data.get("query", "")
-            context = input_data.get("context")
+            if not query:
+                return {
+                    "response": "Error: No query provided to LLM engine",
+                    "type": "llm"
+                }
+            
+            context = input_data.get("context", "")
             
             provider = config.get("provider", "openai")
             model = config.get("model")
@@ -161,21 +186,27 @@ class WorkflowExecutor:
             temperature = config.get("temperature", 0.7)
             max_tokens = config.get("max_tokens", 1000)
             
-            response = self.llm_service.generate_response(
-                query=query,
-                provider=provider,
-                context=context,
-                system_prompt=system_prompt,
-                use_web_search=use_web_search,
-                model=model,
-                temperature=temperature,
-                max_tokens=max_tokens
-            )
-            
-            return {
-                "response": response,
-                "type": "llm"
-            }
+            try:
+                response = self.llm_service.generate_response(
+                    query=query,
+                    provider=provider,
+                    context=context if context else None,
+                    system_prompt=system_prompt,
+                    use_web_search=use_web_search,
+                    model=model,
+                    temperature=temperature,
+                    max_tokens=max_tokens
+                )
+                
+                return {
+                    "response": response,
+                    "type": "llm"
+                }
+            except Exception as e:
+                return {
+                    "response": f"Error generating LLM response: {str(e)}",
+                    "type": "llm"
+                }
         
         elif component_type == "output":
             # Output component returns the final response
@@ -244,6 +275,15 @@ class WorkflowExecutor:
                 continue
             
             visited.add(component_id)
+            
+            # Check if component exists
+            if component_id not in components:
+                return {
+                    "success": False,
+                    "error": f"Component with ID {component_id} not found in workflow",
+                    "response": None
+                }
+            
             component = components[component_id]
             
             # Execute component
@@ -252,8 +292,8 @@ class WorkflowExecutor:
                 results[component_id] = output_data
                 
                 # Add target components to queue
-                for target_id in graph[component_id]:
-                    if target_id not in visited:
+                for target_id in graph.get(component_id, []):
+                    if target_id not in visited and target_id in components:
                         queue.append((target_id, output_data))
             
             except Exception as e:

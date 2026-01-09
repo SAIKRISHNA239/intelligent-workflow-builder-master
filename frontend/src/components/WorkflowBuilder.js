@@ -21,14 +21,17 @@ import ComponentLibrary from './ComponentLibrary';
 import ComponentConfigPanel from './ComponentConfigPanel';
 import { workflowAPI } from '../services/api';
 import { v4 as uuidv4 } from 'uuid';
-import { FaCog } from 'react-icons/fa';
+import { FaCog, FaUser, FaBook, FaBolt, FaCommentDots, FaTrash, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './WorkflowBuilder.css';
 
 // Node Components
-function NodeHeader({ title }) {
+function NodeHeader({ title, icon: Icon }) {
   return (
     <div className="node-header">
-      <span className="node-header-title">{title}</span>
+      <div className="node-header-left">
+        {Icon && <Icon className="node-header-icon" />}
+        <span className="node-header-title">{title}</span>
+      </div>
       <span className="node-header-action">
         <FaCog />
       </span>
@@ -41,7 +44,7 @@ function UserQueryNode({ id, data }) {
 
   return (
     <div className="custom-node user-query-node">
-      <NodeHeader title="User Query" />
+      <NodeHeader title="User Input" icon={FaUser} />
 
       <div className="node-body">
         <div className="node-hint">Enter point for queries</div>
@@ -68,26 +71,46 @@ function UserQueryNode({ id, data }) {
 }
 
 function KnowledgeBaseNode({ id, data }) {
+  const [showApiKey, setShowApiKey] = React.useState(false);
   const embeddingModel = data?.config?.embedding_model || 'text-embedding-3-large';
   const apiKey = data?.config?.api_key || '';
   const fileName = data?.config?.file_name || '';
 
+  const handleDeleteFile = (e) => {
+    e.stopPropagation();
+    data?.onPatch?.(id, { file_name: '' });
+  };
+
   return (
     <div className="custom-node knowledgebase-node">
-      <NodeHeader title="Knowledge Base" />
+      <NodeHeader title="Knowledge Base" icon={FaBook} />
 
       <div className="node-body">
         <div className="node-hint">Let LLM search info in your file</div>
 
         <div className="node-field">
           <div className="node-field-label">File for Knowledge Base</div>
-          <button
-            type="button"
-            className="node-button"
-            onClick={() => data?.onUploadClick?.(id)}
-          >
-            {fileName ? fileName : 'Upload File'}
-          </button>
+          {fileName ? (
+            <div className="node-file-display">
+              <span className="node-file-name">{fileName}</span>
+              <button
+                type="button"
+                className="node-file-delete"
+                onClick={handleDeleteFile}
+                title="Remove file"
+              >
+                <FaTrash />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="node-button"
+              onClick={() => data?.onUploadClick?.(id)}
+            >
+              Upload File
+            </button>
+          )}
         </div>
 
         <div className="node-field">
@@ -104,12 +127,23 @@ function KnowledgeBaseNode({ id, data }) {
 
         <div className="node-field">
           <div className="node-field-label">API Key</div>
-          <input
-            className="node-input"
-            value={apiKey}
-            onChange={(e) => data?.onPatch?.(id, { api_key: e.target.value })}
-            placeholder="********"
-          />
+          <div className="node-input-with-icon">
+            <input
+              className="node-input"
+              type={showApiKey ? 'text' : 'password'}
+              value={apiKey}
+              onChange={(e) => data?.onPatch?.(id, { api_key: e.target.value })}
+              placeholder="********"
+            />
+            <button
+              type="button"
+              className="node-input-icon-btn"
+              onClick={() => setShowApiKey(!showApiKey)}
+              tabIndex={-1}
+            >
+              {showApiKey ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -133,6 +167,8 @@ function KnowledgeBaseNode({ id, data }) {
 }
 
 function LLMEngineNode({ id, data }) {
+  const [showApiKey, setShowApiKey] = React.useState(false);
+  const [showSerpKey, setShowSerpKey] = React.useState(false);
   const model = data?.config?.model || 'GPT 4o Mini';
   const apiKey = data?.config?.api_key || '';
   const prompt = data?.config?.prompt || '';
@@ -142,7 +178,7 @@ function LLMEngineNode({ id, data }) {
 
   return (
     <div className="custom-node llm-engine-node">
-      <NodeHeader title="LLM (OpenAI)" />
+      <NodeHeader title="LLM (OpenAI)" icon={FaBolt} />
 
       <div className="node-body">
         <div className="node-hint">Run a query with OpenAI LLM</div>
@@ -162,12 +198,23 @@ function LLMEngineNode({ id, data }) {
 
         <div className="node-field">
           <div className="node-field-label">API Key</div>
-          <input
-            className="node-input"
-            value={apiKey}
-            onChange={(e) => data?.onPatch?.(id, { api_key: e.target.value })}
-            placeholder="********"
-          />
+          <div className="node-input-with-icon">
+            <input
+              className="node-input"
+              type={showApiKey ? 'text' : 'password'}
+              value={apiKey}
+              onChange={(e) => data?.onPatch?.(id, { api_key: e.target.value })}
+              placeholder="********"
+            />
+            <button
+              type="button"
+              className="node-input-icon-btn"
+              onClick={() => setShowApiKey(!showApiKey)}
+              tabIndex={-1}
+            >
+              {showApiKey ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
         </div>
 
         <div className="node-field">
@@ -210,12 +257,23 @@ function LLMEngineNode({ id, data }) {
         {webSearchEnabled && (
           <div className="node-field">
             <div className="node-field-label">SERP API</div>
-            <input
-              className="node-input"
-              value={serpApiKey}
-              onChange={(e) => data?.onPatch?.(id, { serp_api_key: e.target.value })}
-              placeholder="********"
-            />
+            <div className="node-input-with-icon">
+              <input
+                className="node-input"
+                type={showSerpKey ? 'text' : 'password'}
+                value={serpApiKey}
+                onChange={(e) => data?.onPatch?.(id, { serp_api_key: e.target.value })}
+                placeholder="********"
+              />
+              <button
+                type="button"
+                className="node-input-icon-btn"
+                onClick={() => setShowSerpKey(!showSerpKey)}
+                tabIndex={-1}
+              >
+                {showSerpKey ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -244,7 +302,7 @@ function OutputNode({ id, data }) {
 
   return (
     <div className="custom-node output-node">
-      <NodeHeader title="Output" />
+      <NodeHeader title="Output" icon={FaCommentDots} />
 
       <div className="node-body">
         <div className="node-hint">Output of the result nodes as text</div>
@@ -596,12 +654,12 @@ const WorkflowBuilder = forwardRef(function WorkflowBuilder(
     }
 
     try {
-      // Convert nodes to components
+      // Convert nodes to components - ensure positions are integers
       const components = nodes.map((node) => ({
         component_type: node.type,
         node_id: node.id,
-        position_x: node.position.x,
-        position_y: node.position.y,
+        position_x: Math.round(node.position.x),
+        position_y: Math.round(node.position.y),
         config: mapUiConfigToBackend(node.type, node.data.config || {}),
       }));
 
@@ -636,28 +694,117 @@ const WorkflowBuilder = forwardRef(function WorkflowBuilder(
       alert('Workflow saved successfully!');
     } catch (error) {
       console.error('Error saving workflow:', error);
-      alert('Error saving workflow: ' + (error.response?.data?.detail || error.message));
+      
+      // Handle FastAPI validation errors properly
+      let errorMessage = 'Error saving workflow: ';
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (Array.isArray(data.detail)) {
+          // FastAPI validation errors are arrays
+          errorMessage += data.detail.map(err => {
+            const field = err.loc ? err.loc.join('.') : 'field';
+            return `${field}: ${err.msg}`;
+          }).join(', ');
+        } else if (typeof data.detail === 'string') {
+          errorMessage += data.detail;
+        } else if (data.detail) {
+          errorMessage += JSON.stringify(data.detail);
+        } else {
+          errorMessage += error.message || 'Unknown error';
+        }
+      } else {
+        errorMessage += error.message || 'Unknown error';
+      }
+      
+      alert(errorMessage);
     }
   };
 
   const validateWorkflow = useCallback(async () => {
+    // First save the workflow if it hasn't been saved yet
     if (!workflowId) {
-      alert('Please save the workflow first');
-      return;
+      if (!workflowName.trim()) {
+        alert('Please enter a workflow name and save the workflow first');
+        return;
+      }
+      
+      try {
+        // Save workflow first - ensure positions are integers
+        const components = nodes.map((node) => ({
+          component_type: node.type,
+          node_id: node.id,
+          position_x: Math.round(node.position.x),
+          position_y: Math.round(node.position.y),
+          config: mapUiConfigToBackend(node.type, node.data.config || {}),
+        }));
+
+        const connections = edges.map((edge) => ({
+          source_component_id: edge.source,
+          target_component_id: edge.target,
+          source_handle: edge.sourceHandle,
+          target_handle: edge.targetHandle,
+        }));
+
+        const workflowData = {
+          name: workflowName,
+          components,
+          connections,
+        };
+
+        const response = await workflowAPI.create(workflowData);
+        setWorkflowId(response.data.id);
+      } catch (error) {
+        console.error('Error saving workflow before validation:', error);
+        let errorMessage = 'Error saving workflow: ';
+        if (error.response?.data) {
+          const data = error.response.data;
+          if (Array.isArray(data.detail)) {
+            errorMessage += data.detail.map(err => {
+              const field = err.loc ? err.loc.join('.') : 'field';
+              return `${field}: ${err.msg}`;
+            }).join(', ');
+          } else if (typeof data.detail === 'string') {
+            errorMessage += data.detail;
+          } else {
+            errorMessage += error.message || 'Unknown error';
+          }
+        } else {
+          errorMessage += error.message || 'Unknown error';
+        }
+        alert(errorMessage);
+        return;
+      }
     }
 
+    // Now validate
     try {
       const response = await workflowAPI.validate(workflowId);
       if (response.data.valid) {
         alert('Workflow is valid!');
       } else {
-        alert('Workflow validation failed: ' + response.data.error);
+        alert('Workflow validation failed: ' + (response.data.error || 'Unknown validation error'));
       }
     } catch (error) {
       console.error('Error validating workflow:', error);
-      alert('Error validating workflow');
+      let errorMessage = 'Error validating workflow: ';
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (Array.isArray(data.detail)) {
+          errorMessage += data.detail.map(err => {
+            const field = err.loc ? err.loc.join('.') : 'field';
+            return `${field}: ${err.msg}`;
+          }).join(', ');
+        } else if (typeof data.detail === 'string') {
+          errorMessage += data.detail;
+        } else {
+          errorMessage += error.message || 'Unknown error';
+        }
+      } else {
+        errorMessage += error.message || 'Unknown error';
+      }
+      alert(errorMessage);
     }
-  }, [workflowId]);
+  }, [workflowId, workflowName, nodes, edges]);
 
   const deleteNode = (nodeId) => {
     setNodes((nds) => nds.filter((node) => node.id !== nodeId));
